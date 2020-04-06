@@ -3,6 +3,7 @@ import {UIDFork, UIDConsumer} from "react-uid";
 import {PrerenderedControls} from "./PrerenderedControl";
 
 export interface ComponentProps {
+  wrapperTag?: string;
   restore?: (element: HTMLElement, store?: any) => Promise<any> | any;
   store?: any;
   live: boolean | Promise<any>;
@@ -18,6 +19,7 @@ export interface ComponentState {
 }
 
 export interface WrapperProps {
+  wrapperTag?: string;
   id: string;
   className?: string;
   style?: React.CSSProperties;
@@ -51,9 +53,10 @@ class PrerenderedWrapper extends React.Component<WrapperProps> {
     const {children, live, strict, id, className, style} = this.props;
     const {html} = this.state;
     const props = {id, className, style, 'data-prerendered-border': true};
+    const WrapperTag = `${this.props.wrapperTag || 'div'}`
     return (live || (!html && !strict))
-      ? <div {...props}>{children}</div>
-      : <div {...props} dangerouslySetInnerHTML={{__html: html || ''}}/>
+      ? <WrapperTag {...props}>{children}</WrapperTag>
+      : <WrapperTag {...props} dangerouslySetInnerHTML={{__html: html || ''}}/>
   }
 }
 
@@ -112,7 +115,7 @@ export class PrerenderedComponent extends React.Component<ComponentProps, Compon
   };
 
   render() {
-    const {className, style, children, store, strict = false} = this.props;
+    const {className, style, children, store, wrapperTag, strict = false} = this.props;
     const {live} = this.state;
     return (
       <PrerenderedControls>
@@ -127,6 +130,7 @@ export class PrerenderedComponent extends React.Component<ComponentProps, Compon
                   live={!!(live || isServer)}
                   strict={strict}
                   dehydrate={this.dehydrate}
+                  wrapperTag={wrapperTag}
                 >
                   {store &&
                   <script type={`text/store-prc-${uid}`} dangerouslySetInnerHTML={{__html: JSON.stringify(store)}}/>}
